@@ -61,7 +61,20 @@ pipeline {
                 }
             }
         }
+        stage("Auto Update Deployment File To Git") {
+            steps {
+                script {
+                    sh """
+                        git config --global user.name 'anhminhle007'
+                        git config --global user.email 'leanhminh.hn98@gmail.com'
+                        git add deployment.yml
+                        git commit -m 'Updated Deployment File'
+                    """ 
+                    withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
+                        sh "git push origin main"
+                    }
+                }
+            }
+        }
     }
 }
-
-// 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
