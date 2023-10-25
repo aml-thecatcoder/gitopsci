@@ -18,9 +18,9 @@ pipeline {
         stage("Checkout SCM") {
             steps {
                 script {
-                    git credentialsID: "github",
-                    url: "https://github.com/anhminhle007/gitopsci",
-                    branch: "main"
+                    git branch: "main",
+                        credentialsID: "github",
+                        url: "https://github.com/anhminhle007/gitopsci.git",
                 }
             }
         }
@@ -50,29 +50,10 @@ pipeline {
                 }
             }
         }
-        stage("Updating Kubernetes Deployment File") {
+        stage("Trigger Config Change Pipeline") {
             steps {
                 script {
-                    sh """
-                        cat deployment.yml
-                        sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yml
-                        cat deployment.yml
-                    """
-                }
-            }
-        }
-        stage("Auto Update Deployment File To Git") {
-            steps {
-                script {
-                    sh """
-                        git config --global user.name 'anhminhle007'
-                        git config --global user.email 'leanhminh.hn98@gmail.com'
-                        git add deployment.yml
-                        git commit -m 'Updated Deployment File'
-                    """ 
-                    withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
-                        sh "git push origin main"
-                    }
+                    sh "curl -v -k --user 'admin:1172ca2bcfe9d6d1c2caf48f909fdc5b18' -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'http://44.211.157.90:8080/job/gitopscd/buildWithParameters?token=gitops-config'"
                 }
             }
         }
